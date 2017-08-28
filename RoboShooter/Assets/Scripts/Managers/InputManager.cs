@@ -29,6 +29,11 @@ public static class InputManager {
 
     public static bool GetJump()
     {
+        return Input.GetButton("Jump");
+    }
+
+    public static bool GetJumpDown()
+    {
         return Input.GetButtonDown("Jump");
     }
 

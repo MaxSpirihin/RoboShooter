@@ -83,7 +83,10 @@
     <Compile Include="Assets\Scripts\Character\FpsRayShooter.cs" />
     <Compile Include="Assets\Scripts\Character\IShooterTarget.cs" />
     <Compile Include="Assets\Scripts\Character\Player.cs" />
-    <Compile Include="Assets\Scripts\Enemies\PlayerKnockBall.cs" />
+    <Compile Include="Assets\Scripts\Environment\MovingPlatformTrigger.cs" />
+    <Compile Include="Assets\Scripts\Environment\PathDefinition.cs" />
+    <Compile Include="Assets\Scripts\Environment\PathFollow.cs" />
+    <Compile Include="Assets\Scripts\Environment\PlayerKnockBack.cs" />
     <Compile Include="Assets\Scripts\Helpers\TextureTilingController.cs" />
     <Compile Include="Assets\Scripts\Managers\InputManager.cs" />
   </ItemGroup>
