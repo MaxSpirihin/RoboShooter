@@ -13,18 +13,21 @@ public class FPSMove : MonoBehaviour
     public float horizontalMoveSpeed = 10;
     public float gravity = -50f;
     public float maxVertSpeed = -30f;
+    public bool allowSprint = false;
+    public float sprintMultiplayer = 1.6f;
 
     //прыжок
     public float jumpSpeed = 20;
     public float jumpSpeedMax = 30;//максимальная сила прыжка (когда зажимаем кнопку)
     public float jumpAddTime = 0.15f;//время после начала прыжка, когда нажатая кнопка придает ускорение
     public float jumpAddIgnoreTime = 0.15f;//время после начала прыжка, когда нажатая кнопка еще не придает ускорение, чтобы было легко совершать минимальный прыжок
-
+    public bool allowJetPack = false;
+    public float jetPackForce = 100;
 
     //гашение импульса
     public float horizontalDeceleration = 200f;//торможение при гашении импульса
     public float timeBeforeStopToMove = 0.2f;//Время до полного торможения, когда блок движения снимается
-    
+
     public bool onMovingPlatform { get; set; }
 
 
@@ -55,12 +58,13 @@ public class FPSMove : MonoBehaviour
 
     void HorizontalMove()
     {
-        var horSpeed = new Vector3(InputManager.GetMoveAxisHorizontal() * this.horizontalMoveSpeed, 0, InputManager.GetMoveAxisVertical() * this.horizontalMoveSpeed);
-        horSpeed = Vector3.ClampMagnitude(horSpeed, this.horizontalMoveSpeed);
-        horSpeed = transform.TransformDirection(horSpeed);
+        var horSpeed = (allowSprint && InputManager.GetSprint()) ? horizontalMoveSpeed * sprintMultiplayer : horizontalMoveSpeed;
+        var horSpeedVector = new Vector3(InputManager.GetMoveAxisHorizontal() * horSpeed, 0, InputManager.GetMoveAxisVertical() * horSpeed);
+        horSpeedVector = Vector3.ClampMagnitude(horSpeedVector, horSpeed);
+        horSpeedVector = transform.TransformDirection(horSpeedVector);
 
-        _speed.x = horSpeed.x;
-        _speed.z = horSpeed.z;
+        _speed.x = horSpeedVector.x;
+        _speed.z = horSpeedVector.z;
     }
 
     public int a = 0;
@@ -73,14 +77,25 @@ public class FPSMove : MonoBehaviour
             StartCoroutine(JumpStartCoroutine());
         }
 
-        //обработка длительного прыжка
-        if (_jumpStarted && InputManager.GetJump())
+
+        if (allowJetPack)
         {
-            a++;
-            _speed.y += (jumpSpeedMax - jumpSpeed) * Time.deltaTime / jumpAddTime;
+            if (!_jumpStarted && !_charController.isGrounded && allowJetPack && InputManager.GetJump())
+            {
+                _speed.y += jetPackForce * Time.deltaTime;
+            }
+        }
+        else
+        {
+            //обработка длительного прыжка
+            if (_jumpStarted && InputManager.GetJump())
+            {
+                a++;
+                _speed.y += (jumpSpeedMax - jumpSpeed) * Time.deltaTime / jumpAddTime;
+            }
         }
 
-
+        
         //вертикальное движение с учетом гравитации
         _speed.y += gravity * Time.deltaTime;
         _speed.y = Mathf.Max(_speed.y, maxVertSpeed);
@@ -118,7 +133,7 @@ public class FPSMove : MonoBehaviour
         float horSpeedMagintude = new Vector3(_speed.x, 0, _speed.z).magnitude;
         Vector3 horSpeedDirection = new Vector3(_speed.x, 0, _speed.z).normalized;
 
-        while (horSpeedMagintude > horizontalDeceleration* timeBeforeStopToMove)//чтобы тормозить не до конца
+        while (horSpeedMagintude > horizontalDeceleration * timeBeforeStopToMove)//чтобы тормозить не до конца
         {
             horSpeedMagintude -= horizontalDeceleration * Time.deltaTime;
             _speed.x = horSpeedDirection.x * horSpeedMagintude;

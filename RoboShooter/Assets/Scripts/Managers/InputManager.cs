@@ -37,8 +37,23 @@ public static class InputManager {
         return Input.GetButtonDown("Jump");
     }
 
-    public static bool GetShoot()
+    public static bool GetShootDown()
     {
-        return Input.GetMouseButtonDown(0);
+        return Input.GetButtonDown("Fire1");
+    }
+
+    public static bool GetReloadDown()
+    {
+        return Input.GetButtonDown("Reload");
+    }
+    
+    public static bool GetAim()
+    {
+        return Input.GetButton("Fire2");
+    }
+
+    public static bool GetSprint()
+    {
+        return Input.GetButton("Sprint");
     }
 }

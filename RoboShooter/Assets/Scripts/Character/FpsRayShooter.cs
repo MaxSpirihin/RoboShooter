@@ -9,18 +9,22 @@ using UnityEngine;
 /// </summary>
 public class FpsRayShooter : MonoBehaviour
 {
+    private float TIME_BEFORE_RELOADSOUND = 0.2f;
+
     public AudioClip shootSound;
     public AudioClip reloadSound;
 
     private float _rayLength = 100;
     private Camera _camera;
     private AudioSource _audioSource;
+    private Animator _playerAnimator;
+    private bool _isReloading;
 
     void Start()
     {
         _camera = GetComponent<Camera>();
         _audioSource = GetComponent<AudioSource>();
-
+        _playerAnimator = GameObject.FindObjectOfType<Player>().GetComponent<Animator>();
 #if !UNITY_EDITOR
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -29,32 +33,65 @@ public class FpsRayShooter : MonoBehaviour
 
     void Update()
     {
-        if (InputManager.GetShoot())
-        {
-            //звук
-            if (shootSound != null)
-            {
-                _audioSource.PlayOneShot(shootSound);
-            }
+        if (_isReloading) return;
 
-            //выстрел
-            Vector3 point = new Vector3(_camera.pixelWidth / 2, _camera.pixelHeight / 2, 0);
-            Ray ray = _camera.ScreenPointToRay(point);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, _rayLength))
+        _playerAnimator.SetBool("Aim", InputManager.GetAim());
+        
+        if (InputManager.GetReloadDown())
+        {
+            StartCoroutine(Reload());
+        }
+        
+        if (InputManager.GetShootDown())
+        {
+            Shoot();
+        }
+    }
+
+
+    void Shoot()
+    {
+        _playerAnimator.SetTrigger("Shoot");
+
+        //звук
+        if (shootSound != null)
+        {
+            _audioSource.PlayOneShot(shootSound);
+        }
+
+        //выстрел
+        Vector3 point = new Vector3(_camera.pixelWidth / 2, _camera.pixelHeight / 2, 0);
+        Ray ray = _camera.ScreenPointToRay(point);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, _rayLength))
+        {
+            var target = hit.transform.GetComponent<IShooterTarget>();
+            if (target != null)
             {
-                var target = hit.transform.GetComponent<IShooterTarget>();
-                if (target != null)
-                {
-                    target.Shoot(hit.point);
-                }
-                else
-                {
-                    //отметина в месте попадания
-                    StartCoroutine(ShootIndicator(hit.point));
-                }
+                target.Shoot(hit.point);
+            }
+            else
+            {
+                //отметина в месте попадания
+                StartCoroutine(ShootIndicator(hit.point));
             }
         }
+    }
+
+
+
+    /// <summary>
+    /// перезарядка
+    /// </summary>
+    IEnumerator Reload()
+    {
+        _isReloading = true;
+        _playerAnimator.SetBool("Aim", false);
+        _playerAnimator.SetTrigger("Reload");
+        yield return new WaitForSeconds(TIME_BEFORE_RELOADSOUND);
+        _audioSource.PlayOneShot(reloadSound);
+        yield return new WaitForSeconds(_playerAnimator.GetCurrentAnimatorStateInfo(0).length - TIME_BEFORE_RELOADSOUND);
+        _isReloading = false;
     }
 
     /// <summary>
@@ -68,7 +105,6 @@ public class FpsRayShooter : MonoBehaviour
 
         yield return new WaitForSeconds(100f);
         GameObject.Destroy(sphere);
-
     }
 
 
@@ -81,6 +117,6 @@ public class FpsRayShooter : MonoBehaviour
         style.fontSize = size;
         style.normal.textColor = Color.white;
         style.alignment = TextAnchor.MiddleCenter;
-        GUI.Label(new Rect(x, y, size, size), "*", style);
+    //    GUI.Label(new Rect(x, y, size, size), "*", style);
     }
 }
