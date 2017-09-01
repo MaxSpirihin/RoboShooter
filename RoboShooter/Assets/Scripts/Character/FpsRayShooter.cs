@@ -14,6 +14,10 @@ public class FpsRayShooter : MonoBehaviour
     public AudioClip shootSound;
     public AudioClip reloadSound;
 
+    public float shootBoxSize = 0.3f; //относительно высоты
+    public float shootBoxAimSize = 0.02f;//относительно высоты
+    public bool drawBox = false;
+
     private float _rayLength = 100;
     private Camera _camera;
     private AudioSource _audioSource;
@@ -36,12 +40,12 @@ public class FpsRayShooter : MonoBehaviour
         if (_isReloading) return;
 
         _playerAnimator.SetBool("Aim", InputManager.GetAim());
-        
+
         if (InputManager.GetReloadDown())
         {
             StartCoroutine(Reload());
         }
-        
+
         if (InputManager.GetShootDown())
         {
             Shoot();
@@ -60,7 +64,9 @@ public class FpsRayShooter : MonoBehaviour
         }
 
         //выстрел
-        Vector3 point = new Vector3(_camera.pixelWidth / 2, _camera.pixelHeight / 2, 0);
+        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? shootBoxAimSize : shootBoxSize);
+        Vector3 point = new Vector3(Random.Range((_camera.pixelWidth - boxSize) / 2 , (_camera.pixelWidth + boxSize) / 2),
+            Random.Range((_camera.pixelHeight - boxSize) / 2, (_camera.pixelHeight + boxSize) / 2), 0);
         Ray ray = _camera.ScreenPointToRay(point);
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, _rayLength))
@@ -107,9 +113,13 @@ public class FpsRayShooter : MonoBehaviour
         GameObject.Destroy(sphere);
     }
 
+#if UNITY_EDITOR
 
     void OnGUI()
     {
+        if (!drawBox) return;
+
+        //метка прицела
         int size = 20;
         float x = _camera.pixelWidth / 2 - size / 4;
         float y = _camera.pixelHeight / 2 - size / 2;
@@ -117,6 +127,28 @@ public class FpsRayShooter : MonoBehaviour
         style.fontSize = size;
         style.normal.textColor = Color.white;
         style.alignment = TextAnchor.MiddleCenter;
-    //    GUI.Label(new Rect(x, y, size, size), "*", style);
+        GUI.Label(new Rect(x, y, size, size), "*", style);
+
+        //квадрат разброса
+        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? shootBoxAimSize : shootBoxSize);
+        style.normal.background = MakeTex(2, 2, new Color(1f, 0f, 0f, 0.5f));
+        GUI.Box(new Rect((_camera.pixelWidth - boxSize) / 2, (_camera.pixelHeight - boxSize) / 2,
+            boxSize, boxSize), "", style);
+        
     }
+
+    private Texture2D MakeTex(int width, int height, Color col)
+    {
+        Color[] pix = new Color[width * height];
+        for (int i = 0; i < pix.Length; ++i)
+        {
+            pix[i] = col;
+        }
+        Texture2D result = new Texture2D(width, height);
+        result.SetPixels(pix);
+        result.Apply();
+        return result;
+    }
+
+#endif
 }

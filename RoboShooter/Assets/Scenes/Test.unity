@@ -1265,6 +1265,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shootSound: {fileID: 8300000, guid: f2a9c3d966d5644429311c7c2b209460, type: 3}
   reloadSound: {fileID: 8300000, guid: 59c7ec7fff72fe14e9d51dd2d8112b12, type: 3}
+  shootBoxSize: 0.3
+  shootBoxAimSize: 0.02
+  drawBox: 1
 --- !u!82 &785767264
 AudioSource:
   m_ObjectHideFlags: 0
