@@ -10,12 +10,11 @@ using UnityEngine;
 public class FpsRayShooter : MonoBehaviour
 {
     private float TIME_BEFORE_RELOADSOUND = 0.2f;
+    private float TIME_BEFORE_ACTUAL_RELOAD = 0.1f;
 
     public AudioClip shootSound;
     public AudioClip reloadSound;
 
-    public float shootBoxSize = 0.3f; //относительно высоты
-    public float shootBoxAimSize = 0.02f;//относительно высоты
     public bool drawBox = false;
 
     private float _rayLength = 100;
@@ -23,12 +22,14 @@ public class FpsRayShooter : MonoBehaviour
     private AudioSource _audioSource;
     private Animator _playerAnimator;
     private bool _isReloading;
+    private Player _player;
 
     void Start()
     {
         _camera = GetComponent<Camera>();
         _audioSource = GetComponent<AudioSource>();
-        _playerAnimator = GameObject.FindObjectOfType<Player>().GetComponent<Animator>();
+        _player = GameObject.FindObjectOfType<Player>();
+        _playerAnimator = _player.GetComponent<Animator>();
 #if !UNITY_EDITOR
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -41,12 +42,12 @@ public class FpsRayShooter : MonoBehaviour
 
         _playerAnimator.SetBool("Aim", InputManager.GetAim());
 
-        if (InputManager.GetReloadDown())
+        if (InputManager.GetReloadDown() && _player.gun.CanReload())
         {
             StartCoroutine(Reload());
         }
 
-        if (InputManager.GetShootDown())
+        if (InputManager.GetShootDown() && _player.gun.bulletsInShop > 0)
         {
             Shoot();
         }
@@ -56,6 +57,7 @@ public class FpsRayShooter : MonoBehaviour
     void Shoot()
     {
         _playerAnimator.SetTrigger("Shoot");
+        _player.gun.Shoot();
 
         //звук
         if (shootSound != null)
@@ -64,8 +66,8 @@ public class FpsRayShooter : MonoBehaviour
         }
 
         //выстрел
-        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? shootBoxAimSize : shootBoxSize);
-        Vector3 point = new Vector3(Random.Range((_camera.pixelWidth - boxSize) / 2 , (_camera.pixelWidth + boxSize) / 2),
+        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? _player.gun.shootBoxAimSize : _player.gun.shootBoxSize);
+        Vector3 point = new Vector3(Random.Range((_camera.pixelWidth - boxSize) / 2, (_camera.pixelWidth + boxSize) / 2),
             Random.Range((_camera.pixelHeight - boxSize) / 2, (_camera.pixelHeight + boxSize) / 2), 0);
         Ray ray = _camera.ScreenPointToRay(point);
         RaycastHit hit;
@@ -96,7 +98,9 @@ public class FpsRayShooter : MonoBehaviour
         _playerAnimator.SetTrigger("Reload");
         yield return new WaitForSeconds(TIME_BEFORE_RELOADSOUND);
         _audioSource.PlayOneShot(reloadSound);
-        yield return new WaitForSeconds(_playerAnimator.GetCurrentAnimatorStateInfo(0).length - TIME_BEFORE_RELOADSOUND);
+        yield return new WaitForSeconds(TIME_BEFORE_ACTUAL_RELOAD);
+        _player.gun.Reload();
+        yield return new WaitForSeconds(_playerAnimator.GetCurrentAnimatorStateInfo(0).length - TIME_BEFORE_RELOADSOUND - TIME_BEFORE_ACTUAL_RELOAD);
         _isReloading = false;
     }
 
@@ -130,11 +134,11 @@ public class FpsRayShooter : MonoBehaviour
         GUI.Label(new Rect(x, y, size, size), "*", style);
 
         //квадрат разброса
-        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? shootBoxAimSize : shootBoxSize);
+        float boxSize = _camera.pixelHeight * (InputManager.GetAim() ? _player.gun.shootBoxAimSize : _player.gun.shootBoxSize);
         style.normal.background = MakeTex(2, 2, new Color(1f, 0f, 0f, 0.5f));
         GUI.Box(new Rect((_camera.pixelWidth - boxSize) / 2, (_camera.pixelHeight - boxSize) / 2,
             boxSize, boxSize), "", style);
-        
+
     }
 
     private Texture2D MakeTex(int width, int height, Color col)

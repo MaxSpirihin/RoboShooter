@@ -10,16 +10,20 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class Player : MonoBehaviour {
 
-    public int startHealth = 5;
+    public int startHealth = 100;
+    public Weapon gun;
+    
 
-    private int _health = 5;
+    public int health { get; private set; }
+    
 
 	void Start () {
-        _health = startHealth;
+        health = startHealth;
+        gun.Init(110);
     }
 	
 	void Update () {
-		
+        
 	}
     
     /// <summary>
@@ -27,10 +31,10 @@ public class Player : MonoBehaviour {
     /// </summary>
     public void Damage(int damage = 1)
     {
-        _health--;
-        Debug.Log("Health: " + _health);
+        health--;
+        Debug.Log("Health: " + health);
 
-        if (_health <= 0)
+        if (health <= 0)
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
