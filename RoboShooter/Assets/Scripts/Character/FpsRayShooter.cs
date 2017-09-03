@@ -14,6 +14,7 @@ public class FpsRayShooter : MonoBehaviour
 
     public AudioClip shootSound;
     public AudioClip reloadSound;
+    public ParticleSystem shootEffect;
 
     public bool drawBox = false;
 
@@ -57,6 +58,7 @@ public class FpsRayShooter : MonoBehaviour
     void Shoot()
     {
         _playerAnimator.SetTrigger("Shoot");
+        if (shootEffect != null) shootEffect.Play();
         _player.gun.Shoot();
 
         //звук
