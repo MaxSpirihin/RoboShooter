@@ -4,4 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/MP/MPMenu.unity
+    guid: aace4c8fff979774f936c8c89ffaaf6a
+  - enabled: 1
+    path: Assets/MP/MPArena.unity
+    guid: 0126ed97db7bd8c4a8a3406ce45f134a
