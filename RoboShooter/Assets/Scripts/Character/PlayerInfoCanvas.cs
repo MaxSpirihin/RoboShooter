@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Отображает параметры игрока на Canvas
+/// </summary>
 public class PlayerInfoCanvas : MonoBehaviour {
 
     public Text ammoText;

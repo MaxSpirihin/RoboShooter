@@ -33,7 +33,6 @@ public class MovingPlatformTrigger : MonoBehaviour {
         var player = other.GetComponent<FPSMove>();
         if (player != null)
         {
-            Debug.Log("Player Entered");
             player.transform.SetParent(this.transform.parent);//родительским элементом будет пустой объект - родитель триггера
             player.onMovingPlatform = true;
         }

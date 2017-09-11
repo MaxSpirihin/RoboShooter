@@ -25,7 +25,7 @@ public class FpsLook : MonoBehaviour {
     public FpsLookType type = FpsLookType.Both;
 
     /// <summary>
-    /// Менять т
+    /// Менять локальный transform
     /// </summary>
     public bool useLocal = false;
 

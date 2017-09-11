@@ -67,7 +67,8 @@ public class FPSMove : MonoBehaviour
         _speed.z = horSpeedVector.z;
     }
 
-    public int a = 0;
+   
+
     void VerticalMove()
     {
         //начало прыжка
@@ -90,7 +91,6 @@ public class FPSMove : MonoBehaviour
             //обработка длительного прыжка
             if (_jumpStarted && InputManager.GetJump())
             {
-                a++;
                 _speed.y += (jumpSpeedMax - jumpSpeed) * Time.deltaTime / jumpAddTime;
             }
         }
